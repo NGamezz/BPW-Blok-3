@@ -9,14 +9,14 @@ public class PlayerControlls : MonoBehaviour
     [SerializeField] private Transform playerMesh;
     private Transform start;
     [SerializeField] private float spawnHeight;
+    [SerializeField] private float spawnDelay = .5f;
     [SerializeField] private float walkDistance;
     private Vector3 vel = Vector3.zero;
-    private bool isWalking;
 
     private void Start()
     {
         camera = Camera.main;
-        Invoke(nameof(SpawnPlayer), .5f);
+        Invoke(nameof(SpawnPlayer), spawnDelay);
     }
 
     private void SpawnPlayer()
@@ -28,15 +28,17 @@ public class PlayerControlls : MonoBehaviour
     private void PlayerInput()
     {
         var ray = camera.ScreenPointToRay(Input.mousePosition);
-        if (isWalking) { return; }
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Transform objectHit = hit.transform;
-            if (objectHit.TryGetComponent(out Tile target) && Input.GetKey(KeyCode.Mouse0))
-            {
 
+            Transform objectHit = hit.transform;
+            if (objectHit.TryGetComponent(out Tile target))
+            {
                 target.HighLight();
-                playerMesh.position = Vector3.SmoothDamp(playerMesh.position, new Vector3(objectHit.position.x, spawnHeight, objectHit.position.z), ref vel, walkDistance);
+                if (Input.GetMouseButton(0))
+                {
+                    playerMesh.position = Vector3.MoveTowards(playerMesh.position, new Vector3(objectHit.position.x, spawnHeight, objectHit.position.z), walkDistance);
+                }
             }
         }
     }

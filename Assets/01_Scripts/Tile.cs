@@ -5,21 +5,20 @@ public class Tile : MonoBehaviour
     [SerializeField] private GameObject[] walls;
     [SerializeField] private GameObject[] doors;
     [SerializeField] private GameObject highLight;
-    private bool OnHighLight = false;
+
+    private void Awake()
+    {
+        highLight = FindObjectOfType<HighLight>().gameObject;
+    }
 
     private void Start()
     {
         highLight.SetActive(true);
     }
 
-    private void FixedUpdate()
-    {
-        highLight.SetActive(OnHighLight ? false : true);
-    }
-
     public void HighLight()
     {
-        OnHighLight = true;
+        highLight.transform.position = new Vector3(this.transform.position.x, 1, this.transform.position.z);
     }
 
     public void UpdateRoom(bool[] status)
