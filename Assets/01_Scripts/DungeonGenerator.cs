@@ -33,10 +33,14 @@ public class DungeonGenerator : MonoBehaviour
     }
 
     [SerializeField] private Vector2Int size;
+    [SerializeField] private int width;
+    [SerializeField] private int height;
     private int startPos;
     [SerializeField] private Vector2 offSet;
     public Rule[] rooms;
 
+
+    private Cell[,] dungeon;
 
     private Dictionary<Vector3Int, Cell> cells = new Dictionary<Vector3Int, Cell>();
     private List<Cell> board = new List<Cell>();
@@ -54,8 +58,10 @@ public class DungeonGenerator : MonoBehaviour
             {
                 //cells.TryGetValue(new Vector3Int(i, 0, j), out Cell selectedCell);
 
-                Cell currentCell = board[(i + j * size.x)];
-                if (currentCell.Visited)
+                Cell selectedCell = dungeon[i, j];
+
+                //Cell currentCell = board[(i + j * size.x)];
+                if (selectedCell.Visited)
                 {
                     int randomRoom = -1;
                     List<int> availableRooms = new List<int>();
@@ -88,7 +94,7 @@ public class DungeonGenerator : MonoBehaviour
                     }
 
                     Tile newRoom = Instantiate(rooms[randomRoom].room, new Vector3(i * offSet.x, 0, -j * offSet.y), Quaternion.identity, transform).GetComponent<Tile>();
-                    newRoom.UpdateRoom(currentCell.Status);
+                    newRoom.UpdateRoom(selectedCell.Status);
                     newRoom.name += " " + i + "-" + j;
                 }
             }
@@ -97,13 +103,15 @@ public class DungeonGenerator : MonoBehaviour
 
     private void GenerateDungeonPattern()
     {
-
+        dungeon = new Cell[size.x, size.y];
         for (int x = 0; x < size.x; x++)
         {
             for (int y = 0; y < size.y; y++)
             {
                 Cell cell = new();
-                board.Add(cell);
+                //board.Add(cell);
+
+                dungeon[x, y] = cell;
 
                 //if (cells.ContainsKey(new Vector3Int(x, 0, y))) { return; }
                 //cells.Add(new Vector3Int(x, 0, y), cell);
