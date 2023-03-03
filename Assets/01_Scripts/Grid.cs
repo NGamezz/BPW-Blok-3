@@ -1,7 +1,6 @@
-using JetBrains.Annotations;
-using System.Collections;
 using System.Collections.Generic;
-using System.Transactions;
+using System.Linq;
+using System;
 using UnityEngine;
 
 [System.Serializable]
@@ -10,6 +9,8 @@ public class Room
     public GameObject room;
     public Vector2Int minPosition;
     public Vector2Int maxPosition;
+
+    public bool[] status = new bool[4];
 
     public bool Obligatory;
 
@@ -23,11 +24,12 @@ public class Room
     }
 }
 
+[System.Serializable]
 public class Cell
 {
     public bool Visited = false;
+    //0 North, 1 South, 2 East, 3 West
     public bool[] Status = new bool[4];
-    public Vector3Int position;
 
     public int x;
     public int y;
@@ -45,9 +47,10 @@ public class Grid : MonoBehaviour
     [SerializeField] private int height;
     [SerializeField] private Vector2Int startPos;
     [SerializeField] private Vector2Int offSet;
-    private Cell[,] dungeon;
+    [SerializeField] private Cell[,] dungeon;
 
     [SerializeField] private Room[] rooms;
+    [SerializeField] private Room[] roomsWithoutStart;
 
     private void Start()
     {
@@ -87,7 +90,7 @@ public class Grid : MonoBehaviour
                     {
                         if (availableRooms.Count > 0)
                         {
-                            randomRoom = availableRooms[Random.Range(0, availableRooms.Count)];
+                            randomRoom = availableRooms[UnityEngine.Random.Range(0, availableRooms.Count)];
                         }
                         else
                         {
@@ -97,9 +100,25 @@ public class Grid : MonoBehaviour
 
                     var newRoom = Instantiate(rooms[randomRoom].room, new Vector3(x * offSet.x, 0, -y * offSet.y), Quaternion.identity, transform).GetComponent<Tile>();
                     newRoom.UpdateRoom(currentCell.Status);
-                    newRoom.name += "" + x + "-" + y;
+                    newRoom.Status = currentCell.Status;
+                    newRoom.name += " " + x + "-" + y;
                 }
             }
+        }
+        CheckForDuplicate();
+    }
+
+    private void CheckForDuplicate()
+    {
+        StartTile[] startTile = FindObjectsOfType<StartTile>();
+        foreach (StartTile tile in startTile)
+        {
+            if (tile.name.Contains("0-0")) { break; }
+            Tile tileComponent = tile.GetComponent<Tile>();
+            var tempRoom = Instantiate(roomsWithoutStart[UnityEngine.Random.Range(0, roomsWithoutStart.Length)].room, tile.transform.position, Quaternion.identity, transform).GetComponent<Tile>();
+            tempRoom.UpdateRoom(tileComponent.Status);
+            Debug.Log(tile.name + " removed.");
+            Destroy(tile.gameObject);
         }
     }
 
@@ -119,7 +138,7 @@ public class Grid : MonoBehaviour
         Cell currentCell = new(startPos.x, startPos.y);
 
         int t = 0;
-        while (t < 1000)
+        while (t < 500)
         {
             t++;
 
@@ -144,32 +163,39 @@ public class Grid : MonoBehaviour
             {
                 path.Push(currentCell);
 
-                Cell newCell = neighbours[Random.Range(0, neighbours.Count)];
+                Cell newCell = neighbours[UnityEngine.Random.Range(0, neighbours.Count)];
 
-                if (newCell.x - 1 == currentCell.x)
+                //0 North, 1 South, 2 East, 3 West
+                if (newCell.x > currentCell.x)
                 {
-                    dungeon[currentCell.x, currentCell.y].Status[2] = true;
-                    currentCell = newCell;
-                    dungeon[currentCell.x, currentCell.y].Status[3] = true;
-                }
-                if (newCell.x + 1 == currentCell.x)
-                {
-                    dungeon[currentCell.x, currentCell.y].Status[1] = true;
-                    currentCell = newCell;
-                    dungeon[currentCell.x, currentCell.y].Status[0] = true;
+                    if (newCell.x - 1 == currentCell.x)
+                    {
+                        dungeon[currentCell.x, currentCell.y].Status[2] = true;
+                        currentCell = newCell;
+                        dungeon[currentCell.x, currentCell.y].Status[3] = true;
+                    }
+                    if (newCell.x + 1 == currentCell.x)
+                    {
+                        dungeon[currentCell.x, currentCell.y].Status[3] = true;
+                        currentCell = newCell;
+                        dungeon[currentCell.x, currentCell.y].Status[2] = true;
+                    }
                 }
 
-                if (newCell.y - 1 == currentCell.y)
+                else
                 {
-                    dungeon[currentCell.x, currentCell.y].Status[3] = true;
-                    currentCell = newCell;
-                    dungeon[currentCell.x, currentCell.y].Status[2] = true;
-                }
-                if (newCell.y - 1 == currentCell.y)
-                {
-                    dungeon[currentCell.x, currentCell.y].Status[0] = true;
-                    currentCell = newCell;
-                    dungeon[currentCell.x, currentCell.y].Status[1] = true;
+                    if (newCell.y - 1 == currentCell.y)
+                    {
+                        dungeon[currentCell.x, currentCell.y].Status[1] = true;
+                        currentCell = newCell;
+                        dungeon[currentCell.x, currentCell.y].Status[0] = true;
+                    }
+                    if (newCell.y + 1 == currentCell.y)
+                    {
+                        dungeon[currentCell.x, currentCell.y].Status[0] = true;
+                        currentCell = newCell;
+                        dungeon[currentCell.x, currentCell.y].Status[1] = true;
+                    }
                 }
             }
         }

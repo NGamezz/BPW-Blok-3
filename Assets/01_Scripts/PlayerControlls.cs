@@ -2,16 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerControlls : MonoBehaviour
+public class PlayerControlls : Character
 {
-    private new Camera camera;
     [SerializeField] private Transform player;
     [SerializeField] private Transform playerMesh;
-    private Transform start;
     [SerializeField] private float spawnHeight;
     [SerializeField] private float spawnDelay = .5f;
     [SerializeField] private float walkDistance;
-    private Vector3 vel = Vector3.zero;
+    private new Camera camera;
+    private Transform start;
 
     private void Start()
     {
@@ -27,17 +26,20 @@ public class PlayerControlls : MonoBehaviour
 
     private void PlayerInput()
     {
+        if (!CurrentTurn) { return; }
+
         var ray = camera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-
             Transform objectHit = hit.transform;
             if (objectHit.TryGetComponent(out Tile target))
             {
                 target.HighLight();
                 if (Input.GetMouseButton(0))
                 {
-                    playerMesh.position = Vector3.MoveTowards(playerMesh.position, new Vector3(objectHit.position.x, spawnHeight, objectHit.position.z), walkDistance);
+                    TurnManager.Instance.ChangeTurn();
+                    Vector3 desiredPosition = new(objectHit.position.x, spawnHeight, objectHit.position.z);
+                    playerMesh.position = Vector3.MoveTowards(playerMesh.position, desiredPosition, walkDistance);
                 }
             }
         }
