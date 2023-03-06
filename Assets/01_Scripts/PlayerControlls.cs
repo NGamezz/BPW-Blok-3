@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerControlls : Character
@@ -30,8 +28,8 @@ public class PlayerControlls : Character
                 target.HighLight();
                 if (Input.GetMouseButton(0))
                 {
-                    TurnManager.Instance.ChangeTurn();
-                    Grid.Instance.MovePlayer(target);
+                    //TurnManager.Instance.ChangeTurn();
+                    DungeonGenerator.Instance.MovePlayer(target, false);
                 }
             }
         }

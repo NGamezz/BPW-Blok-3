@@ -2,7 +2,22 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
+    private bool neighbour;
+    public bool Neighbour
+    {
+        get
+        {
+            return neighbour;
+        }
+        set
+        {
+            this.gameObject.SetActive(value);
+            neighbour = value;
+        }
+    }
+
     private bool visited;
+
     public bool Visited
     {
         get
@@ -11,10 +26,11 @@ public class Tile : MonoBehaviour
         }
         set
         {
-            this.gameObject.SetActive(value);
             visited = value;
         }
     }
+
+    [SerializeField] private bool hasItem;
 
     [SerializeField] private GameObject[] walls;
     [SerializeField] private GameObject[] doors;
@@ -26,7 +42,7 @@ public class Tile : MonoBehaviour
 
     public void Neighbouring()
     {
-        Visited = true;
+        Neighbour = true;
     }
 
     private void Awake()
