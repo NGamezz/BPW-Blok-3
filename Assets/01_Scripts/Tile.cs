@@ -2,10 +2,32 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
+    private bool visited;
+    public bool Visited
+    {
+        get
+        {
+            return visited;
+        }
+        set
+        {
+            this.gameObject.SetActive(value);
+            visited = value;
+        }
+    }
+
     [SerializeField] private GameObject[] walls;
     [SerializeField] private GameObject[] doors;
     [SerializeField] private GameObject highLight;
+    [SerializeField] private GameObject neighbourHighlight;
+    //private bool playerInRoom = false;
     public bool[] Status = new bool[4];
+    public Vector2Int position;
+
+    public void Neighbouring()
+    {
+        Visited = true;
+    }
 
     private void Awake()
     {
@@ -16,6 +38,11 @@ public class Tile : MonoBehaviour
     {
         highLight.SetActive(true);
     }
+
+    //public void SetPlayer(bool trueOrFalse)
+    //{
+    //    playerInRoom = trueOrFalse;
+    //}
 
     public void HighLight()
     {

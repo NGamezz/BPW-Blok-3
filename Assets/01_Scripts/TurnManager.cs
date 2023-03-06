@@ -13,7 +13,7 @@ public class TurnManager : MonoBehaviour
 
     private List<Character> entities = new();
 
-    [SerializeField] public int CurrentTurn { get; private set; }
+    public int CurrentTurn { get; private set; }
 
     private Character player;
 
@@ -52,6 +52,8 @@ public class TurnManager : MonoBehaviour
 
     public void ChangeTurn()
     {
+        if (entities.Count < 2) { return; }
+
         entities[CurrentTurn - 1].CurrentTurn = false;
 
         CurrentTurn++;
