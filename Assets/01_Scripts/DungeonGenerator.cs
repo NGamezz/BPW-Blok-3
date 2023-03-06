@@ -1,16 +1,16 @@
 using System.Collections.Generic;
-using System.Linq;
-using System;
 using UnityEngine;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 [System.Serializable]
 public class Room
 {
-    public GameObject room;
-    public Vector2Int minPosition;
-    public Vector2Int maxPosition;
+    public GameObject RoomObject;
+    public Vector2Int MinPosition;
+    public Vector2Int MaxPosition;
+    public Vector2Int Offset;
 
     public bool[] status = new bool[4];
 
@@ -18,7 +18,7 @@ public class Room
 
     public int ProbabilityOfSpawning(int x, int y)
     {
-        if (x >= minPosition.x && x <= maxPosition.x && y >= minPosition.y && y <= maxPosition.y)
+        if (x >= MinPosition.x && x <= MaxPosition.x && y >= MinPosition.y && y <= MaxPosition.y)
         {
             return Obligatory ? 2 : 1;
         }
@@ -35,8 +35,6 @@ public class Cell
 
     public bool PlayerInCell = false;
 
-    public Cell Parent;
-
     public int x;
     public int y;
 
@@ -48,23 +46,12 @@ public class Cell
     }
 
     public bool Walkable;
-    public int GCost;
-    public int HCost;
-
-    public int FCost
-    {
-        get
-        {
-            return GCost + HCost;
-        }
-    }
 }
 
-public class Grid : MonoBehaviour
+public class DungeonGenerator : MonoBehaviour
 {
-    public static Grid Instance { get; private set; }
+    public static DungeonGenerator Instance { get; private set; }
 
-    private PlayerControlls playerTransform;
     [SerializeField] private int width;
     [SerializeField] private int height;
     [SerializeField] private Vector2Int startPos;
@@ -73,20 +60,31 @@ public class Grid : MonoBehaviour
     [SerializeField] private Tile[,] tiles;
     [SerializeField] private Room[] rooms;
     [SerializeField] private Room startRoom;
-    [SerializeField] private Room[] roomsWithoutStart;
+    private PlayerControlls playerControlls;
 
     private Vector2Int playerPosition = Vector2Int.zero;
 
     private Tile hitTile;
 
-    public void MovePlayer(Tile objectHit)
+    public Vector3 RandomSpawnLocation()
+    {
+        Vector3 position = tiles[Random.Range(0, width), Random.Range(0, height)].gameObject.transform.position;
+        return position;
+    }
+
+    public void MovePlayer(Tile objectHit, bool random)
     {
         List<Tile> neighbours = ReturnPlayerNeighbours(playerPosition);
         if (neighbours.Count == 0) { return; }
 
+        if (random)
+        {
+            hitTile = neighbours[Random.Range(0, neighbours.Count)];
+        }
+
         foreach (Tile tile in neighbours)
         {
-            if (tile == null) { continue; }
+            if (tile == null || random) { continue; }
             tile.Neighbouring();
             if (tile == objectHit)
             {
@@ -97,7 +95,7 @@ public class Grid : MonoBehaviour
         if (hitTile != null)
         {
             playerPosition = hitTile.position;
-            playerTransform.PlayerMesh.position = new Vector3(hitTile.transform.position.x, 2f, hitTile.transform.position.z);
+            playerControlls.PlayerMesh.position = new Vector3(hitTile.transform.position.x, 2f, hitTile.transform.position.z);
         }
     }
 
@@ -132,7 +130,7 @@ public class Grid : MonoBehaviour
     private void Start()
     {
         tiles = new Tile[width, height];
-        playerTransform = FindObjectOfType<PlayerControlls>();
+        playerControlls = FindObjectOfType<PlayerControlls>();
         GenerateGrid();
     }
 
@@ -178,18 +176,19 @@ public class Grid : MonoBehaviour
 
                     if (x == 0 && y == 0)
                     {
-                        var newRoom = Instantiate(startRoom.room, new Vector3(x * offSet.x, 0, -y * offSet.y), Quaternion.identity, transform).GetComponent<Tile>();
+                        var newRoom = Instantiate(startRoom.RoomObject, new Vector3(x * startRoom.Offset.x, 0, -y * startRoom.Offset.y), Quaternion.identity, transform).GetComponent<Tile>();
                         newRoom.gameObject.SetActive(true);
                         newRoom.UpdateRoom(currentCell.Status);
                         newRoom.Status = currentCell.Status;
                         newRoom.position = new Vector2Int(x, y);
                         tiles[x, y] = newRoom;
                         newRoom.name += " " + x + "-" + y;
-                        playerTransform.PlayerMesh.position = new Vector3(newRoom.transform.position.x, playerTransform.PlayerMesh.transform.position.y, newRoom.transform.position.z);
+                        playerControlls.transform.position = new Vector3(newRoom.transform.position.x, playerControlls.transform.position.y, newRoom.transform.position.z);
+                        playerControlls.PlayerMesh.position = new Vector3(newRoom.transform.position.x, playerControlls.PlayerMesh.transform.position.y, newRoom.transform.position.z);
                     }
                     else
                     {
-                        var newRoom = Instantiate(rooms[randomRoom].room, new Vector3(x * offSet.x, 0, -y * offSet.y), Quaternion.identity, transform).GetComponent<Tile>();
+                        var newRoom = Instantiate(rooms[randomRoom].RoomObject, new Vector3(x * rooms[randomRoom].Offset.x, 0, -y * rooms[randomRoom].Offset.y), Quaternion.identity, transform).GetComponent<Tile>();
                         newRoom.UpdateRoom(currentCell.Status);
                         newRoom.gameObject.SetActive(false);
                         newRoom.Status = currentCell.Status;

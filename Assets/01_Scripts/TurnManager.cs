@@ -5,6 +5,8 @@ using UnityEngine;
 public class Character : MonoBehaviour
 {
     public bool CurrentTurn;
+    public GameObject EntityMesh;
+    public Vector3 Position;
 }
 
 public class TurnManager : MonoBehaviour
