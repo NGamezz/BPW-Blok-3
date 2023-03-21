@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Net;
 using System.Xml;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
@@ -9,6 +11,8 @@ public class Room
     public Vector2Int MinPosition;
     public Vector2Int MaxPosition;
     public Vector2Int Offset;
+
+    public bool[] ContainsPickup = new bool[4];
 
     public bool[] status = new bool[4];
 
@@ -30,8 +34,6 @@ public class Cell
     public bool Visited = false;
     //0 North, 1 South, 2 East, 3 West
     public bool[] Status = new bool[4];
-
-    public bool PlayerInCell = false;
 
     public int x;
     public int y;
@@ -55,46 +57,93 @@ public class DungeonGenerator : MonoBehaviour
     [SerializeField] private Tile[,] tiles;
     [SerializeField] private Room[] rooms;
     [SerializeField] private Room startRoom;
+
+    private List<Character> entities = new();
+
+    private readonly List<Vector2Int> existingTiles = new();
     private PlayerControlls playerControlls;
 
-    private Vector2Int playerPosition = Vector2Int.zero;
+    private Vector2Int entityPosition = Vector2Int.zero;
 
-    private Tile hitTile;
-
-    public Vector3 RandomSpawnLocation()
+    public Tile GetRandomTile()
     {
-        Vector3 position = tiles[Random.Range(0, width), Random.Range(0, height)].gameObject.transform.position;
-        return position;
+        Vector2Int randomPos = existingTiles[Random.Range(0, existingTiles.Count)];
+        Tile tile = tiles[randomPos.x, randomPos.y];
+        return tile;
     }
 
-    public void MovePlayer(Tile objectHit, bool random)
+    public void ActivateTile(Vector2Int position)
     {
-        List<Tile> neighbours = ReturnPlayerNeighbours(playerPosition);
-        if (neighbours.Count == 0) { return; }
+        tiles[position.x, position.y].gameObject.SetActive(true);
+    }
 
-        if (random)
-        {
-            hitTile = neighbours[Random.Range(0, neighbours.Count)];
-        }
+    public Vector3 MoveEntity(Tile objectHit, Vector3 currentPosition, Vector2Int gridPosition, Character entity, bool player)
+    {
+        entityPosition = gridPosition;
+        List<Tile> neighbours = ReturnPlayerNeighbours(gridPosition);
+        neighbours.Add(objectHit);
+        if (neighbours.Count == 0) { return currentPosition; }
+        Tile hitTile = null;
 
         foreach (Tile tile in neighbours)
         {
-            if (tile == null || random) { continue; }
-            tile.Neighbouring();
+            if (tile == null) { continue; }
+            tile.gameObject.SetActive(true);
+            tile.Neighbour = true;
             if (tile == objectHit)
             {
                 hitTile = tile;
             }
         }
 
-        if (hitTile != null)
+        if (hitTile == null) { return currentPosition; }
+
+        if (hitTile.HasItem)
         {
-            playerPosition = hitTile.position;
-            playerControlls.PlayerMesh.position = new Vector3(hitTile.transform.position.x, 2f, hitTile.transform.position.z);
+            if (!entity.skills.Contains(hitTile.Item))
+            {
+                if (player)
+                {
+                    hitTile.Item.itemMesh.SetActive(true);
+
+                    bool hasBeenPlaced = false;
+                    foreach (InventorySlot slot in entity.inventorySlots)
+                    {
+                        if (slot.transform.childCount == 0 && !hasBeenPlaced)
+                        {
+                            hasBeenPlaced = true;
+                            hitTile.Item.itemMesh.transform.SetParent(slot.transform);
+                            hitTile.Item.itemMesh.transform.localScale = new Vector3(1, 1, 1);
+                        }
+                    }
+                }
+
+                entity.AddPower(hitTile.Item);
+                hitTile.HasItem = false;
+            }
         }
+
+        entityPosition = hitTile.position;
+
+        foreach (Character character in entities)
+        {
+            if (character == entity) { continue; }
+            if (character.entityPosition == gridPosition)
+            {
+                Debug.Log("Battle");
+            }
+        }
+
+        return new Vector3(hitTile.transform.position.x, 2f, hitTile.transform.position.z);
+    }
+    //Must Update Position After Moving
+    public Vector2Int UpdatePosition()
+    {
+        return entityPosition;
     }
 
-    private List<Tile> ReturnPlayerNeighbours(Vector2Int position)
+    //Perhaps giving an error because not every value in the grid has a tile
+    public List<Tile> ReturnPlayerNeighbours(Vector2Int position)
     {
         List<Tile> neighbours = new();
 
@@ -124,6 +173,12 @@ public class DungeonGenerator : MonoBehaviour
 
     private void Start()
     {
+        Character[] characters = FindObjectsOfType<Character>();
+        foreach (Character entity in characters)
+        {
+            entities.Add(entity);
+        }
+
         tiles = new Tile[width, height];
         playerControlls = FindObjectOfType<PlayerControlls>();
         GenerateGrid();
@@ -184,15 +239,16 @@ public class DungeonGenerator : MonoBehaviour
     private void SpawnRoom(int index, bool start, bool[] status, int x, int y)
     {
         var newRoom = Instantiate(start ? startRoom.RoomObject : rooms[index].RoomObject, new Vector3(x * startRoom.Offset.x, 0, -y * startRoom.Offset.y), Quaternion.identity, transform).GetComponent<Tile>();
+        existingTiles.Add(new Vector2Int(x, y));
+        tiles[x, y] = newRoom;
         newRoom.gameObject.SetActive(start);
         newRoom.UpdateRoom(status);
         newRoom.position = new Vector2Int(x, y);
         newRoom.name += " " + x + "-" + y;
-        tiles[x, y] = newRoom;
         if (start)
         {
             playerControlls.transform.position = new Vector3(newRoom.transform.position.x, playerControlls.transform.position.y, newRoom.transform.position.z);
-            playerControlls.PlayerMesh.position = new Vector3(newRoom.transform.position.x, playerControlls.PlayerMesh.transform.position.y, newRoom.transform.position.z);
+            playerControlls.PlayerMesh.position = new Vector3(newRoom.transform.position.x, 2f, newRoom.transform.position.z);
         }
     }
 
@@ -211,11 +267,8 @@ public class DungeonGenerator : MonoBehaviour
 
         Cell currentCell = new(startPos.x, startPos.y);
 
-        int t = 0;
-        while (t < 500)
+        for (int i = 0; i < (width * height); i++)
         {
-            t++;
-
             dungeon[currentCell.x, currentCell.y].Visited = true;
 
             List<Cell> neighbours = ReturnNeighbours(dungeon[currentCell.x, currentCell.y]);
@@ -239,7 +292,6 @@ public class DungeonGenerator : MonoBehaviour
 
                 Cell newCell = neighbours[UnityEngine.Random.Range(0, neighbours.Count)];
 
-                //0 North, 1 South, 2 East, 3 West
                 if (newCell.x > currentCell.x)
                 {
                     if (newCell.x - 1 == currentCell.x)

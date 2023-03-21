@@ -11,39 +11,39 @@ public class Tile : MonoBehaviour
         }
         set
         {
-            this.gameObject.SetActive(value);
             neighbour = value;
+
+            gameObject.SetActive(value);
         }
     }
 
-    private bool visited;
-
-    public bool Visited
+    [SerializeField] private bool hasItem = false;
+    public bool HasItem
     {
         get
         {
-            return visited;
+            return hasItem;
         }
+
         set
         {
-            visited = value;
+            hasItem = value;
+            pickup.SetActive(value);
         }
     }
 
-    [SerializeField] private bool hasItem;
+    public Item Item;
+
+    [SerializeField] private GameObject pickup;
+    public GameObject Pickup { get { return pickup; } }
 
     [SerializeField] private GameObject[] walls;
     [SerializeField] private GameObject[] doors;
     [SerializeField] private GameObject highLight;
     [SerializeField] private GameObject neighbourHighlight;
-    //private bool playerInRoom = false;
+
     public bool[] Status = new bool[4];
     public Vector2Int position;
-
-    public void Neighbouring()
-    {
-        Neighbour = true;
-    }
 
     private void Awake()
     {
@@ -54,11 +54,6 @@ public class Tile : MonoBehaviour
     {
         highLight.SetActive(true);
     }
-
-    //public void SetPlayer(bool trueOrFalse)
-    //{
-    //    playerInRoom = trueOrFalse;
-    //}
 
     public void HighLight()
     {
