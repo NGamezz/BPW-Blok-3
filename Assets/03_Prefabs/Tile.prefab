@@ -336,6 +336,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hasItem: 0
+  Item: {fileID: 0}
   pickup: {fileID: 0}
   walls:
   - {fileID: 5514539288059183956}

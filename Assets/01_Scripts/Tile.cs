@@ -11,25 +11,8 @@ public class Tile : MonoBehaviour
         }
         set
         {
-            this.gameObject.SetActive(value);
-            neighbour = value;
-        }
-    }
-
-    private bool visited;
-
-    public bool Visited
-    {
-        get
-        {
-        return visited;
-        }
-        set
-        {
-        
-            neighbour = value;
-
             gameObject.SetActive(value);
+            neighbour = value;
         }
     }
 
@@ -51,6 +34,7 @@ public class Tile : MonoBehaviour
     public Item Item;
 
     [SerializeField] private GameObject pickup;
+
     public GameObject Pickup { get { return pickup; } }
 
     [SerializeField] private GameObject[] walls;

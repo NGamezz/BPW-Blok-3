@@ -536,7 +536,7 @@ MonoBehaviour:
   moveSpeed: 7
   rb: {fileID: 0}
   shakeDuration: 0.5
-  shakeAmplitude: 0.1
+  shakeAmplitude: 0.05
   smoothTime: 1
 --- !u!4 &920313099
 Transform:
