@@ -85,6 +85,11 @@ public class DungeonGenerator : MonoBehaviour
         if (neighbours.Count == 0) { return currentPosition; }
         Tile hitTile = null;
 
+        if (random)
+        {
+            hitTile = neighbours[Random.Range(0, neighbours.Count)];
+        }
+
         foreach (Tile tile in neighbours)
         {
             if (tile == null) { continue; }

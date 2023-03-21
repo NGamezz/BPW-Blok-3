@@ -11,6 +11,22 @@ public class Tile : MonoBehaviour
         }
         set
         {
+            this.gameObject.SetActive(value);
+            neighbour = value;
+        }
+    }
+
+    private bool visited;
+
+    public bool Visited
+    {
+        get
+        {
+        return visited;
+        }
+        set
+        {
+        
             neighbour = value;
 
             gameObject.SetActive(value);
