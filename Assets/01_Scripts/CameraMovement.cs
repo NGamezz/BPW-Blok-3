@@ -22,6 +22,7 @@ public class CameraMovement : MonoBehaviour
     private float verticalInput;
     private float shakeTimer;
     private bool canShake;
+    private bool combat = false;
 
     private void Awake()
     {
@@ -52,6 +53,15 @@ public class CameraMovement : MonoBehaviour
 
     private void OnEnable()
     {
+        EventManager.AddListener(EventType.StartCombat, () => combat = true);
+        EventManager.AddListener(EventType.ExitCombat, () => combat = false);
+        EventManager.AddListener(EventType.ShakeCamera, ShakeCamera);
+    }
+
+    private void OnDisable()
+    {
+        EventManager.AddListener(EventType.StartCombat, () => combat = true);
+        EventManager.AddListener(EventType.ExitCombat, () => combat = false);
         EventManager.AddListener(EventType.ShakeCamera, ShakeCamera);
     }
 
@@ -68,6 +78,8 @@ public class CameraMovement : MonoBehaviour
 
     private void Update()
     {
+        if (combat) { return; }
+
         if (canShake)
         {
             StartCameraShakeEffect();
@@ -80,6 +92,7 @@ public class CameraMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (combat) { return; }
         ApplyForce();
     }
 
@@ -91,7 +104,6 @@ public class CameraMovement : MonoBehaviour
         Vector3 mapSmoothedPos = Vector3.SmoothDamp(mapCameraTransform.position, desiredMapCameraTransform.position, ref velocity, smoothTime);
         mapCameraTransform.SetPositionAndRotation(mapSmoothedPos, desiredMapCameraTransform.rotation);
     }
-
 
     public void ShakeCamera()
     {

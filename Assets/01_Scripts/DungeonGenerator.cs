@@ -118,31 +118,31 @@ public class DungeonGenerator : MonoBehaviour
                     }
                 }
 
-                entity.AddPower(hitTile.Item);
+                entity.AddPower(hitTile.Item, player);
                 hitTile.HasItem = false;
             }
         }
 
         entityPosition = hitTile.position;
+        entity.entityPosition = entityPosition;
 
         foreach (Character character in entities)
         {
             if (character == entity) { continue; }
-            if (character.entityPosition == gridPosition)
+            if (character.entityPosition == gridPosition && gridPosition != Vector2.zero)
             {
-                Debug.Log("Battle");
+                if (character == playerControlls || entity == playerControlls)
+                {
+                    entity.inCombat = true;
+                    character.inCombat = true;
+                    EventManager.InvokeEvent(EventType.StartCombat);
+                }
             }
         }
 
         return new Vector3(hitTile.transform.position.x, 2f, hitTile.transform.position.z);
     }
-    //Must Update Position After Moving
-    public Vector2Int UpdatePosition()
-    {
-        return entityPosition;
-    }
 
-    //Perhaps giving an error because not every value in the grid has a tile
     public List<Tile> ReturnPlayerNeighbours(Vector2Int position)
     {
         List<Tile> neighbours = new();

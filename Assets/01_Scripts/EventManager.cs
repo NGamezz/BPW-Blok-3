@@ -4,7 +4,9 @@ using UnityEngine;
 
 public enum EventType
 {
-    ShakeCamera
+    ShakeCamera,
+    StartCombat,
+    ExitCombat
 }
 
 public static class EventManager

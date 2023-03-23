@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 2560
     height: 1349
   m_ShowMode: 4
-  m_Title: Game
+  m_Title: Project
   m_RootView: {fileID: 4}
   m_MinSize: {x: 875, y: 492}
   m_MaxSize: {x: 10000, y: 10000}
@@ -75,7 +75,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 200}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 49
+  controlID: 17
 --- !u!114 &4
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -152,7 +152,7 @@ MonoBehaviour:
   m_MinSize: {x: 400, y: 200}
   m_MaxSize: {x: 32384, y: 16192}
   vertical: 0
-  controlID: 140
+  controlID: 88
 --- !u!114 &7
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -198,7 +198,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 200}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 40
+  controlID: 97
 --- !u!114 &9
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -1010,9 +1010,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 
+      m_SelectedIDs: 0a670000
       m_LastClickedID: 0
-      m_ExpandedIDs: 8af3ffff7a7a0000dc7a0000
+      m_ExpandedIDs: 0cfbffff34fbffff58660000746600008e660000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1118,7 +1118,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/03_Prefabs
+    - Assets/01_Scripts/Skills
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 0
@@ -1132,7 +1132,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: d06d0000
     m_LastClickedID: 28112
-    m_ExpandedIDs: 0000000070710000727100007471000076710000787100007a7100007c710000
+    m_ExpandedIDs: 00000000846f0000866f0000886f00008a6f00008c6f00008e6f0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1160,7 +1160,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: ffffffff0000000070710000727100007471000076710000787100007a710000
+    m_ExpandedIDs: ffffffff00000000846f0000866f0000886f00008a6f00008c6f00008e6f0000c46f0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1566,9 +1566,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 132.25168, y: -1.0203562, z: -41.35628}
+    m_Target: {x: 125.76602, y: 1.2529573, z: -50.707924}
     speed: 2
-    m_Value: {x: 132.25168, y: -1.0203562, z: -41.35628}
+    m_Value: {x: 125.76602, y: 1.2529573, z: -50.707924}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1617,11 +1617,11 @@ MonoBehaviour:
   m_Rotation:
     m_Target: {x: -0.26326504, y: 0.5012555, z: -0.16333397, w: -0.8079346}
     speed: 2
-    m_Value: {x: -0.2652058, y: 0.49152398, z: -0.16016296, w: -0.8138906}
+    m_Value: {x: -0.2632648, y: 0.50125504, z: -0.16333382, w: -0.8079338}
   m_Size:
-    m_Target: 19.420683
+    m_Target: 18.546753
     speed: 2
-    m_Value: 19.420683
+    m_Value: 18.546753
   m_Ortho:
     m_Target: 0
     speed: 2

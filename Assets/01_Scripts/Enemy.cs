@@ -27,6 +27,22 @@ public class Enemy : Character
         DungeonGenerator.Instance.ActivateTile(entityPosition);
     }
 
+    private void OnEnable()
+    {
+        EventManager.AddListener(EventType.StartCombat, StartCombat);
+        EventManager.AddListener(EventType.ExitCombat, ExitCombat);
+    }
+
+    private void ExitCombat()
+    {
+
+    }
+
+
+    private void StartCombat()
+    {
+        enemyMesh.SetActive(false);
+    }
     private void Update()
     {
         if (CurrentTurn)
@@ -52,7 +68,7 @@ public class Enemy : Character
         List<Tile> neighbours = DungeonGenerator.Instance.ReturnPlayerNeighbours(entityPosition);
         Tile targetTile = neighbours[UnityEngine.Random.Range(0, neighbours.Count)];
         gameObject.transform.position = DungeonGenerator.Instance.MoveEntity(targetTile, transform.position, entityPosition, this, false);
-        entityPosition = DungeonGenerator.Instance.UpdatePosition();
+
         yield return new WaitForSeconds(delay);
         allowTurn = true;
     }
