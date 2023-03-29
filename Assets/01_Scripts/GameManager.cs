@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private List<Character> entitiesInCombat = new();
 
     [SerializeField] private GameObject gameOverScreen;
+
+    [SerializeField] private GameObject victoryScreen;
 
     [SerializeField] private int mainMenuSceneIndex;
 
@@ -47,8 +50,8 @@ public class GameManager : MonoBehaviour
     {
         if (entities.Count == 1 && entities[0] == player)
         {
-            Debug.Log("Victory");
-            EventManager.InvokeEvent(EventType.Restart);
+            victoryScreen.SetActive(true);
+            Invoke(nameof(Victory), 2f);
         }
         if (inCombat)
         {
@@ -80,6 +83,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void Victory()
+    {
+        Debug.Log("Victory");
+        EventManager.InvokeEvent(EventType.Restart);
+    }
+
     public void SetEnemies(Enemy entity)
     {
         if (!GameStarted)
@@ -95,6 +104,8 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        if (this == null) { return; }
+        SceneManager.LoadScene(mainMenuSceneIndex);
         gameOverScreen.SetActive(true);
         Invoke(nameof(Restart), 2f);
     }
@@ -115,6 +126,8 @@ public class GameManager : MonoBehaviour
     private void Restart()
     {
         if (this == null) { return; }
+
+        Destroy(DungeonGenerator.Instance.gameObject);
 
         Character[] characters = FindObjectsOfType<Character>();
         entities.AddRange(characters);
@@ -196,6 +209,8 @@ public class GameManager : MonoBehaviour
     {
         if (this == null) { return; }
         SetTurnToPlayer();
+        victoryScreen.SetActive(false);
+        gameOverScreen.SetActive(false);
         Invoke(nameof(StartGame), 2f);
     }
 

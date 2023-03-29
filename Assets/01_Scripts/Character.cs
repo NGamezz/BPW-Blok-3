@@ -52,8 +52,6 @@ public class Character : MonoBehaviour
 
     [SerializeField] protected UnityEngine.UI.Slider healthSlider;
 
-    [SerializeField] protected Skills skillsScriptableObject;
-
     [SerializeField] private float health = 100f;
 
     [SerializeField] protected int currentAmountOfTurns;

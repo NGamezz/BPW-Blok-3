@@ -80,7 +80,6 @@ public class PlayerControlls : Character
         dungeonUI.SetActive(false);
         combatUI.SetActive(false);
         buttonHolder.SetActive(false);
-        SceneManager.LoadScene(mainMenuSceneIndex);
         Destroy(playerHolder);
     }
 
@@ -89,7 +88,6 @@ public class PlayerControlls : Character
         audioSource = GetComponent<AudioSource>();
         maxHealth = Health;
         healthSlider.value = healthSlider.maxValue;
-        skillsScriptableObject.Items.Clear();
         playerMesh.gameObject.SetActive(true);
         dungeonUI.SetActive(true);
         combatUI.SetActive(false);
@@ -98,7 +96,6 @@ public class PlayerControlls : Character
 
         GameManager.Instance.SetPlayer(this);
     }
-
 
     private void StartCombat()
     {
@@ -147,7 +144,6 @@ public class PlayerControlls : Character
     {
         if (this == null) { return; }
         currentAmountOfTurns = maxAmountOfTurns;
-        entityPosition = Vector2Int.zero;
         inCombat = false;
         if (currentTurnText != null)
         {
@@ -192,6 +188,8 @@ public class PlayerControlls : Character
                 playerMesh.position = DungeonGenerator.Instance.MoveEntity(target, playerMesh.position, entityPosition, this, true);
                 EventManager.InvokeEvent(EventType.ShakeCamera);
                 audioSource.Play();
+
+                EventManager.InvokeEvent(EventType.MovePlayer);
 
                 if (currentAmountOfTurns <= 0)
                 {

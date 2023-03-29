@@ -2725,7 +2725,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dungeonSceneIndex: 1
-  tutorialSceneIndex: 0
+  tutorialSceneIndex: 2
 --- !u!1 &2058206714
 GameObject:
   m_ObjectHideFlags: 0

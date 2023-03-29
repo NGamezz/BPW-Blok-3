@@ -20,9 +20,9 @@ public class Skill : MonoBehaviour
     public void IncreaseDamageMultiplier(float amount)
     {
         damageMultiplier += amount;
-        if (damageMultiplier > 3f)
+        if (damageMultiplier > 2.5f)
         {
-            damageMultiplier = 3f;
+            damageMultiplier = 2.5f;
         }
     }
 
@@ -82,10 +82,10 @@ public class Skill : MonoBehaviour
         if (randomInt == 0)
         {
             owner.Shield = true;
-            if (GameManager.Instance.Player.CurrentTurn == true)
-            {
-                GameManager.Instance.ChangeTurn();
-            }
+        }
+        if (GameManager.Instance.Player.CurrentTurn == true)
+        {
+            GameManager.Instance.ChangeTurn();
         }
     }
 }

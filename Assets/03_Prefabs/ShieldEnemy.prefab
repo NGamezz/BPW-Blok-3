@@ -615,11 +615,10 @@ MonoBehaviour:
   entityPosition: {x: 0, y: 0}
   MoveText: {fileID: 8483194231156641439}
   healthSlider: {fileID: 225528755388649596}
-  skillsScriptableObject: {fileID: 11400000, guid: a615a0c81f18ac442bd483176756cb9f, type: 2}
-  health: 100
+  health: 150
   currentAmountOfTurns: 3
   currentTurn: 0
-  enemyMesh: {fileID: 0}
+  enemyMesh: {fileID: 6295508737814841863}
   enemyCombatObject: {fileID: 7011797011599385983}
   delay: 2
   allowTurn: 1
@@ -1215,5 +1214,10 @@ PrefabInstance:
 --- !u!4 &6293590631266125251 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4394185532969230, guid: 9e066cea98814aa448c70270a3c60251, type: 3}
+  m_PrefabInstance: {fileID: 6294008252533118157}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6295508737814841863 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1949430161825482, guid: 9e066cea98814aa448c70270a3c60251, type: 3}
   m_PrefabInstance: {fileID: 6294008252533118157}
   m_PrefabAsset: {fileID: 0}

@@ -9,6 +9,7 @@ public class GarbageBin : MonoBehaviour, IDropHandler
     {
         if (playerControlls.CurrentTurn)
         {
+            EventManager.InvokeEvent(EventType.ItemDrop);
             GameObject dropped = eventData.pointerDrag;
             Item item = dropped.GetComponent<Item>();
             playerControlls.RemovePower(item);

@@ -1922,7 +1922,6 @@ MonoBehaviour:
   entityPosition: {x: 0, y: 0}
   MoveText: {fileID: 1638212277111025064}
   healthSlider: {fileID: 676666788}
-  skillsScriptableObject: {fileID: 11400000, guid: 4624bf6d867794b41a1a90e197197c5e, type: 2}
   health: 150
   currentAmountOfTurns: 3
   currentTurn: 0
@@ -1936,7 +1935,7 @@ MonoBehaviour:
   combatUI: {fileID: 9042234187788333239}
   spawnHeight: 3
   walkDistance: 5
-  combatSceneIndex: 2
+  combatSceneIndex: 3
   dungeonSceneIndex: 1
   mainMenuSceneIndex: 0
   buttonHolder: {fileID: 2073483718}

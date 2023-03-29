@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using UnityEngine;
 
 public enum EventType
@@ -10,7 +11,10 @@ public enum EventType
     GameOver,
     Restart,
     Pauze,
-    Resume
+    Resume,
+    MovePlayer,
+    ItemDrop,
+    PickupItem
 }
 
 public static class EventManager
@@ -44,6 +48,7 @@ public static class EventManager
 
     public static void InvokeEvent(EventType type)
     {
+        if (!Events.ContainsKey(type)) { return; }
         Events[type]?.Invoke();
     }
 

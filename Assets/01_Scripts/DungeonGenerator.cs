@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
@@ -124,6 +125,7 @@ public class DungeonGenerator : MonoBehaviour
 
         if (hitTile.HasItem)
         {
+            EventManager.InvokeEvent(EventType.PickupItem);
             bool duplicate = false;
             string skillType = hitTile.Item.Skill.SkillName;
             for (int i = 0; i < entity.skills.Count; i++)
@@ -215,25 +217,42 @@ public class DungeonGenerator : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+        }
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
     }
 
     private void Start()
     {
         entities.Clear();
         entities.AddRange(GameManager.Instance.Entities);
-
         tiles = new Tile[width, height];
 
-        if (GameManager.Instance.GameStarted)
-        {
-            playerControlls = GameManager.Instance.Player;
-        }
-        else
-        {
-            playerControlls = FindObjectOfType<PlayerControlls>();
-        }
+        playerControlls = FindObjectOfType<PlayerControlls>();
         GenerateGrid();
+    }
+
+    private void ExitCombat()
+    {
+        if (this == null) { return; }
+        gameObject.SetActive(true);
+    }
+    private void StartCombat()
+    {
+        if (this == null) { return; }
+        gameObject.SetActive(false);
+    }
+
+    private void OnEnable()
+    {
+        EventManager.AddListener(EventType.StartCombat, StartCombat);
+        EventManager.AddListener(EventType.ExitCombat, ExitCombat);
     }
 
     private void GenerateDungeon()
