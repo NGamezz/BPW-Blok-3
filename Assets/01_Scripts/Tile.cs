@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
-    private bool neighbour;
     public bool Neighbour
     {
         get
@@ -16,7 +15,6 @@ public class Tile : MonoBehaviour
         }
     }
 
-    [SerializeField] private bool hasItem = false;
     public bool HasItem
     {
         get
@@ -31,29 +29,18 @@ public class Tile : MonoBehaviour
         }
     }
 
+    public bool HasEntity = false;
+    public bool[] Status = new bool[4];
+    public Vector2Int position;
     public Item Item;
-
-    [SerializeField] private GameObject pickup;
-
     public GameObject Pickup { get { return pickup; } }
 
+    [SerializeField] private GameObject pickup;
     [SerializeField] private GameObject[] walls;
     [SerializeField] private GameObject[] doors;
     [SerializeField] private GameObject highLight;
-    [SerializeField] private GameObject neighbourHighlight;
-
-    public bool[] Status = new bool[4];
-    public Vector2Int position;
-
-    private void Awake()
-    {
-        highLight = FindObjectOfType<HighLight>().gameObject;
-    }
-
-    private void Start()
-    {
-        highLight.SetActive(true);
-    }
+    [SerializeField] private bool hasItem = false;
+    private bool neighbour;
 
     public void HighLight()
     {
@@ -67,5 +54,15 @@ public class Tile : MonoBehaviour
             doors[i].SetActive(_status[i]);
             walls[i].SetActive(!_status[i]);
         }
+    }
+
+    private void Awake()
+    {
+        highLight = FindObjectOfType<HighLight>().gameObject;
+    }
+
+    private void Start()
+    {
+        highLight.SetActive(true);
     }
 }

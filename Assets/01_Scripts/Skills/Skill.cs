@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -6,27 +5,31 @@ public class Skill : MonoBehaviour
 {
     public int WhichType = 0;
     public string SkillName;
+
     [SerializeField] private float damage = 10f;
+
     private float damageMultiplier = 1;
 
-    private List<Character> entities = new();
+    private Character owner;
 
-    public void Initialize()
+    public void Initialize(Character owner)
     {
-        entities.Clear();
-        entities.AddRange(TurnManager.Instance.Entities);
+        this.owner = owner;
+    }
 
-        for (int i = 0; i < entities.Count; i++)
+    public void IncreaseDamageMultiplier(float amount)
+    {
+        damageMultiplier += amount;
+        if (damageMultiplier > 3f)
         {
-            if (!entities[i].inCombat)
-            {
-                entities.RemoveAt(i);
-            }
+            damageMultiplier = 3f;
         }
     }
 
     public void Attack()
     {
+        if (owner == null || this == null) { return; }
+        owner.MoveText.text = SkillName;
         switch (WhichType)
         {
             case 0:
@@ -43,28 +46,46 @@ public class Skill : MonoBehaviour
 
     private void Sword()
     {
-        for (int i = 0; i < entities.Count; i++)
+        if (GameManager.Instance == null || this == null || owner == null) { return; }
+        if (GameManager.Instance.EntitiesInCombat.Count == 0) { return; }
+
+        for (int i = 0; i < GameManager.Instance.EntitiesInCombat.Count; i++)
         {
-            if (entities[i].CurrentTurn == false)
+            if (GameManager.Instance == null || this == null || owner == null) { return; }
+            if (GameManager.Instance.EntitiesInCombat[i] != owner)
             {
-                entities[i].TakeDamage((damage * damageMultiplier));
-                entities[i].CurrentTurn = true;
-            }
-            else
-            {
-                entities[i].CurrentTurn = false;
+                GameManager.Instance.EntitiesInCombat[i].TakeDamage(damage * damageMultiplier);
             }
         }
-        Debug.Log("Sword");
+
+        if (GameManager.Instance.Player.CurrentTurn == true)
+        {
+            GameManager.Instance.ChangeTurn();
+        }
     }
 
     private void Staff()
     {
+        if (GameManager.Instance == null) { return; }
+        owner.Heal(damage * damageMultiplier);
 
+        if (GameManager.Instance.Player.CurrentTurn == true)
+        {
+            GameManager.Instance.ChangeTurn();
+        }
     }
 
     private void Shield()
     {
-
+        if (GameManager.Instance == null) { return; }
+        int randomInt = Random.Range(0, 3);
+        if (randomInt == 0)
+        {
+            owner.Shield = true;
+            if (GameManager.Instance.Player.CurrentTurn == true)
+            {
+                GameManager.Instance.ChangeTurn();
+            }
+        }
     }
 }

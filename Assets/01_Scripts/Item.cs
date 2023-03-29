@@ -4,18 +4,15 @@ using UnityEngine.EventSystems;
 
 public class Item : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
 {
-    [SerializeField] public GameObject itemMesh;
-    [SerializeField] Image image;
-
-    [SerializeField] private Skill skill;
     public Skill Skill { get { return skill; } }
+
+    public GameObject itemMesh;
 
     public InventoryManager InventoryManager { get; private set; }
 
-    private void Awake()
-    {
-        InventoryManager = GetComponentInParent<InventoryManager>();
-    }
+    [SerializeField] private Image image;
+
+    [SerializeField] private Skill skill;
 
     public string GetSkillName()
     {
@@ -49,5 +46,10 @@ public class Item : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHand
     {
         InventoryManager.UnregisterDraggedObject(eventData.delta);
         image.raycastTarget = true;
+    }
+
+    private void Awake()
+    {
+        InventoryManager = GetComponentInParent<InventoryManager>();
     }
 }

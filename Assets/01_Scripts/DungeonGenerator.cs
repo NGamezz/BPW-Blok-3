@@ -1,7 +1,4 @@
 using System.Collections.Generic;
-using System.Net;
-using System.Xml;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
@@ -11,8 +8,6 @@ public class Room
     public Vector2Int MinPosition;
     public Vector2Int MaxPosition;
     public Vector2Int Offset;
-
-    public bool[] ContainsPickup = new bool[4];
 
     public bool[] status = new bool[4];
 
@@ -49,6 +44,13 @@ public class DungeonGenerator : MonoBehaviour
 {
     public static DungeonGenerator Instance { get; private set; }
 
+    public Tile GetRandomTile()
+    {
+        Vector2Int randomPos = existingTiles[Random.Range(0, existingTiles.Count)];
+        Tile tile = tiles[randomPos.x, randomPos.y];
+        return tile;
+    }
+
     [SerializeField] private int width;
     [SerializeField] private int height;
     [SerializeField] private Vector2Int startPos;
@@ -65,13 +67,6 @@ public class DungeonGenerator : MonoBehaviour
 
     private Vector2Int entityPosition = Vector2Int.zero;
 
-    public Tile GetRandomTile()
-    {
-        Vector2Int randomPos = existingTiles[Random.Range(0, existingTiles.Count)];
-        Tile tile = tiles[randomPos.x, randomPos.y];
-        return tile;
-    }
-
     public void ActivateTile(Vector2Int position)
     {
         tiles[position.x, position.y].gameObject.SetActive(true);
@@ -80,65 +75,93 @@ public class DungeonGenerator : MonoBehaviour
     public Vector3 MoveEntity(Tile objectHit, Vector3 currentPosition, Vector2Int gridPosition, Character entity, bool player)
     {
         entityPosition = gridPosition;
+        entities.Clear();
+        entities.AddRange(GameManager.Instance.Entities);
         List<Tile> neighbours = ReturnPlayerNeighbours(gridPosition);
-        neighbours.Add(objectHit);
         if (neighbours.Count == 0) { return currentPosition; }
         Tile hitTile = null;
 
-        foreach (Tile tile in neighbours)
+        for (int i = 0; i < neighbours.Count; i++)
         {
-            if (tile == null) { continue; }
-            tile.gameObject.SetActive(true);
-            tile.Neighbour = true;
-            if (tile == objectHit)
+            neighbours[i].gameObject.SetActive(true);
+            neighbours[i].Neighbour = true;
+            if (neighbours[i] == objectHit)
             {
-                hitTile = tile;
+                if (!player)
+                {
+                    if (neighbours[i].HasEntity) { continue; }
+
+                    hitTile = neighbours[i];
+                    neighbours[i].HasEntity = true;
+                    tiles[gridPosition.x, gridPosition.y].HasEntity = false;
+                }
+
+                if (player)
+                {
+                    if (neighbours[i].HasEntity)
+                    {
+                        for (int t = 0; t < entities.Count; t++)
+                        {
+                            if (entities[t].entityPosition == neighbours[i].position)
+                            {
+                                entities[t].inCombat = true;
+                                entity.inCombat = true;
+                                EventManager.InvokeEvent(EventType.StartCombat);
+                            }
+                        }
+                    }
+                    hitTile = neighbours[i];
+                    neighbours[i].HasEntity = true;
+                    tiles[gridPosition.x, gridPosition.y].HasEntity = false;
+                }
             }
         }
 
-        if (hitTile == null) { return currentPosition; }
+        if (hitTile == null)
+        {
+            return currentPosition;
+        }
 
         if (hitTile.HasItem)
         {
-            if (!entity.skills.Contains(hitTile.Item))
+            bool duplicate = false;
+            string skillType = hitTile.Item.Skill.SkillName;
+            for (int i = 0; i < entity.skills.Count; i++)
             {
-                if (player)
+                if (entity.skills[i].Skill.SkillName == skillType)
                 {
-                    hitTile.Item.itemMesh.SetActive(true);
+                    entity.skills[i].Skill.IncreaseDamageMultiplier(0.5f);
+                    duplicate = true;
+                }
+            }
 
-                    bool hasBeenPlaced = false;
-                    foreach (InventorySlot slot in entity.inventorySlots)
+            if (player && !duplicate)
+            {
+                hitTile.Item.itemMesh.SetActive(true);
+
+                bool hasBeenPlaced = false;
+                for (int i = 0; i < entity.inventorySlots.Count; i++)
+                {
+                    if (entity.inventorySlots[i].transform.childCount == 0 && !hasBeenPlaced)
                     {
-                        if (slot.transform.childCount == 0 && !hasBeenPlaced)
-                        {
-                            hasBeenPlaced = true;
-                            hitTile.Item.itemMesh.transform.SetParent(slot.transform);
-                            hitTile.Item.itemMesh.transform.localScale = new Vector3(1, 1, 1);
-                        }
+                        hasBeenPlaced = true;
+                        hitTile.Item.itemMesh.transform.SetParent(entity.inventorySlots[i].transform);
+                        hitTile.Item.itemMesh.transform.localScale = new Vector3(1, 1, 1);
+                        entity.skills.Add(hitTile.Item);
                     }
                 }
-
-                entity.AddPower(hitTile.Item, player);
-                hitTile.HasItem = false;
             }
+
+            if (!duplicate)
+            {
+                entity.AddPower(hitTile.Item, player, entity.transform);
+            }
+
+            hitTile.HasItem = false;
         }
 
         entityPosition = hitTile.position;
         entity.entityPosition = entityPosition;
-
-        foreach (Character character in entities)
-        {
-            if (character == entity) { continue; }
-            if (character.entityPosition == gridPosition && gridPosition != Vector2.zero)
-            {
-                if (character == playerControlls || entity == playerControlls)
-                {
-                    entity.inCombat = true;
-                    character.inCombat = true;
-                    EventManager.InvokeEvent(EventType.StartCombat);
-                }
-            }
-        }
 
         return new Vector3(hitTile.transform.position.x, 2f, hitTile.transform.position.z);
     }
@@ -149,19 +172,43 @@ public class DungeonGenerator : MonoBehaviour
 
         if (position.x - 1 >= 0)
         {
-            neighbours.Add(tiles[position.x - 1, position.y]);
+            if (tiles[position.x - 1, position.y] != null)
+            {
+                if (tiles[position.x - 1, position.y].Status[2])
+                {
+                    neighbours.Add(tiles[position.x - 1, position.y]);
+                }
+            }
         }
         if (position.x + 1 < width)
         {
-            neighbours.Add(tiles[position.x + 1, position.y]);
+            if (tiles[position.x + 1, position.y] != null)
+            {
+                if (tiles[position.x + 1, position.y].Status[3])
+                {
+                    neighbours.Add(tiles[position.x + 1, position.y]);
+                }
+            }
         }
         if (position.y - 1 >= 0)
         {
-            neighbours.Add(tiles[position.x, position.y - 1]);
+            if (tiles[position.x, position.y - 1] != null)
+            {
+                if (tiles[position.x, position.y - 1].Status[1])
+                {
+                    neighbours.Add(tiles[position.x, position.y - 1]);
+                }
+            }
         }
         if (position.y + 1 < height)
         {
-            neighbours.Add(tiles[position.x, position.y + 1]);
+            if (tiles[position.x, position.y + 1] != null)
+            {
+                if (tiles[position.x, position.y + 1].Status[0])
+                {
+                    neighbours.Add(tiles[position.x, position.y + 1]);
+                }
+            }
         }
         return neighbours;
     }
@@ -173,14 +220,19 @@ public class DungeonGenerator : MonoBehaviour
 
     private void Start()
     {
-        Character[] characters = FindObjectsOfType<Character>();
-        foreach (Character entity in characters)
-        {
-            entities.Add(entity);
-        }
+        entities.Clear();
+        entities.AddRange(GameManager.Instance.Entities);
 
         tiles = new Tile[width, height];
-        playerControlls = FindObjectOfType<PlayerControlls>();
+
+        if (GameManager.Instance.GameStarted)
+        {
+            playerControlls = GameManager.Instance.Player;
+        }
+        else
+        {
+            playerControlls = FindObjectOfType<PlayerControlls>();
+        }
         GenerateGrid();
     }
 
@@ -245,6 +297,7 @@ public class DungeonGenerator : MonoBehaviour
         newRoom.UpdateRoom(status);
         newRoom.position = new Vector2Int(x, y);
         newRoom.name += " " + x + "-" + y;
+        newRoom.Status = status;
         if (start)
         {
             playerControlls.transform.position = new Vector3(newRoom.transform.position.x, playerControlls.transform.position.y, newRoom.transform.position.z);

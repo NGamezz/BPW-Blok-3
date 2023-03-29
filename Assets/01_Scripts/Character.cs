@@ -1,10 +1,13 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
+using TMPro;
 
 public class Character : MonoBehaviour
 {
-    private bool currentTurn;
+    public List<Item> skills = new();
+
+    public List<InventorySlot> inventorySlots = new();
     public bool CurrentTurn
     {
         get
@@ -14,33 +17,77 @@ public class Character : MonoBehaviour
         set
         {
             currentTurn = value;
-            ChangeTurnAction();
+            ChangeTurnAction(value);
         }
     }
-    public Vector2Int entityPosition = Vector2Int.zero;
+    public float Health
+    {
+        get
+        {
+            return health;
+        }
+        set
+        {
+            health = value;
+            if (inCombat)
+            {
+                healthSlider.value = (Health / maxHealth);
+                if (health <= 0)
+                {
+                    HealthDepletedAction();
+                }
+            }
+        }
+    }
 
-    public bool inCombat = false;
-
-    [SerializeField] protected Skills skillsScriptableObject;
-
-    public float Health = 100f;
+    public int CurrentAmountOfTurns { get { return currentAmountOfTurns; } set { currentAmountOfTurns = value; } }
 
     public bool Shield = false;
 
-    public List<Item> skills = new();
+    public bool inCombat = false;
 
-    public List<InventorySlot> inventorySlots = new();
+    public Vector2Int entityPosition = Vector2Int.zero;
+
+    public TMP_Text MoveText;
+
+    [SerializeField] protected UnityEngine.UI.Slider healthSlider;
+
+    [SerializeField] protected Skills skillsScriptableObject;
+
+    [SerializeField] private float health = 100f;
+
+    [SerializeField] protected int currentAmountOfTurns;
+
+    [SerializeField] private bool currentTurn;
+
+    protected float maxHealth;
+
+
+    public void Heal(float amount)
+    {
+        Health += amount;
+        if (Health > maxHealth)
+        {
+            Health = maxHealth;
+        }
+        Shield = false;
+    }
 
     public void TakeDamage(float amount)
     {
-        Health -= amount;
+        if (!Shield)
+        {
+            Health -= amount;
+        }
+        Shield = false;
     }
 
-    public void AddPower(Item skill, bool player)
+    public void AddPower(Item skill, bool player, Transform transform)
     {
         if (!skills.Contains(skill) && skills.Count < 3 && !player)
         {
             skills.Add(skill);
+            skill.gameObject.transform.SetParent(transform);
         }
     }
 
@@ -52,7 +99,13 @@ public class Character : MonoBehaviour
         }
     }
 
-    public virtual void ChangeTurnAction()
+    public virtual void HealthDepletedAction()
+    {
+        EventManager.InvokeEvent(EventType.ExitCombat);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
+    }
+
+    public virtual void ChangeTurnAction(bool value)
     {
     }
 }

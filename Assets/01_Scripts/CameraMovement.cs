@@ -5,9 +5,7 @@ public class CameraMovement : MonoBehaviour
     [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform cameraHolderTransform;
     [SerializeField] private Transform cameraTransform;
-    [SerializeField] private Transform mapCameraTransform;
     [SerializeField] private Transform desiredCameraTransform;
-    [SerializeField] private Transform desiredMapCameraTransform;
     [SerializeField] private float moveSpeed;
     [SerializeField] private Rigidbody rb;
 
@@ -20,9 +18,31 @@ public class CameraMovement : MonoBehaviour
     private Vector3 moveDirection;
     private float horizontalInput;
     private float verticalInput;
+    private bool combat = false;
+    private bool inMenu = false;
     private float shakeTimer;
     private bool canShake;
-    private bool combat = false;
+
+    private void ShakeCamera()
+    {
+        canShake = true;
+        shakeTimer = shakeDuration;
+    }
+
+    private void StartCameraShakeEffect()
+    {
+        if (shakeTimer > 0)
+        {
+            cameraTransform.localPosition = originalCameraPosition + Random.insideUnitSphere * shakeAmplitude;
+            shakeTimer -= Time.deltaTime;
+        }
+        else
+        {
+            canShake = false;
+            shakeTimer = 0f;
+            cameraTransform.localPosition = originalCameraPosition;
+        }
+    }
 
     private void Awake()
     {
@@ -55,13 +75,8 @@ public class CameraMovement : MonoBehaviour
     {
         EventManager.AddListener(EventType.StartCombat, () => combat = true);
         EventManager.AddListener(EventType.ExitCombat, () => combat = false);
-        EventManager.AddListener(EventType.ShakeCamera, ShakeCamera);
-    }
-
-    private void OnDisable()
-    {
-        EventManager.AddListener(EventType.StartCombat, () => combat = true);
-        EventManager.AddListener(EventType.ExitCombat, () => combat = false);
+        EventManager.AddListener(EventType.Pauze, () => inMenu = true);
+        EventManager.AddListener(EventType.Resume, () => inMenu = false);
         EventManager.AddListener(EventType.ShakeCamera, ShakeCamera);
     }
 
@@ -78,7 +93,7 @@ public class CameraMovement : MonoBehaviour
 
     private void Update()
     {
-        if (combat) { return; }
+        if (combat || inMenu) { return; }
 
         if (canShake)
         {
@@ -92,7 +107,7 @@ public class CameraMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (combat) { return; }
+        if (combat || inMenu) { return; }
         ApplyForce();
     }
 
@@ -100,29 +115,6 @@ public class CameraMovement : MonoBehaviour
     {
         Vector3 smoothedPos = Vector3.SmoothDamp(cameraHolderTransform.position, desiredCameraTransform.position, ref velocity, smoothTime);
         cameraHolderTransform.SetPositionAndRotation(smoothedPos, desiredCameraTransform.rotation);
-
-        Vector3 mapSmoothedPos = Vector3.SmoothDamp(mapCameraTransform.position, desiredMapCameraTransform.position, ref velocity, smoothTime);
-        mapCameraTransform.SetPositionAndRotation(mapSmoothedPos, desiredMapCameraTransform.rotation);
     }
 
-    public void ShakeCamera()
-    {
-        canShake = true;
-        shakeTimer = shakeDuration;
-    }
-
-    public void StartCameraShakeEffect()
-    {
-        if (shakeTimer > 0)
-        {
-            cameraTransform.localPosition = originalCameraPosition + Random.insideUnitSphere * shakeAmplitude;
-            shakeTimer -= Time.deltaTime;
-        }
-        else
-        {
-            canShake = false;
-            shakeTimer = 0f;
-            cameraTransform.localPosition = originalCameraPosition;
-        }
-    }
 }

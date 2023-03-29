@@ -6,15 +6,23 @@ public enum EventType
 {
     ShakeCamera,
     StartCombat,
-    ExitCombat
+    ExitCombat,
+    GameOver,
+    Restart,
+    Pauze,
+    Resume
 }
 
 public static class EventManager
 {
-
-    private static Dictionary<EventType, System.Action> events = new();
     public static Dictionary<EventType, System.Action> Events { get { return events; } }
 
+    private static Dictionary<EventType, System.Action> events = new();
+
+    public static void ClearEvents()
+    {
+        events.Clear();
+    }
 
     public static void AddListener(EventType type, System.Action action)
     {

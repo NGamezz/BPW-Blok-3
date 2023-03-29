@@ -5,11 +5,6 @@ public class GarbageBin : MonoBehaviour, IDropHandler
 {
     private PlayerControlls playerControlls;
 
-    private void Awake()
-    {
-        playerControlls = FindObjectOfType<PlayerControlls>();
-    }
-
     public void OnDrop(PointerEventData eventData)
     {
         if (playerControlls.CurrentTurn)
@@ -22,4 +17,10 @@ public class GarbageBin : MonoBehaviour, IDropHandler
             inventory.CurrentItem = null;
         }
     }
+
+    private void Awake()
+    {
+        playerControlls = FindObjectOfType<PlayerControlls>();
+    }
+
 }

@@ -1,75 +1,137 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerControlls : Character
 {
+    public GameObject PlayerHolder { get { return playerHolder; } }
+    public Transform PlayerMesh { get { return playerMesh; } }
+
     [SerializeField] private Transform player;
     [SerializeField] private Transform playerMesh;
+
+    [SerializeField] private AudioSource audioSource;
+
+    [SerializeField] private GameObject playerHolder;
+    [SerializeField] private GameObject menuObject;
 
     [SerializeField] private TMP_Text currentTurnText;
 
     [SerializeField] private GameObject dungeonUI;
     [SerializeField] private GameObject combatUI;
 
-    [SerializeField] private Slider healthSlider;
-
-    public Transform PlayerMesh { get { return playerMesh; } }
-
     [SerializeField] private float spawnHeight;
     [SerializeField] private float walkDistance;
 
     [SerializeField] private int combatSceneIndex;
     [SerializeField] private int dungeonSceneIndex;
+    [SerializeField] private int mainMenuSceneIndex;
 
+    [SerializeField] private GameObject buttonHolder;
     [SerializeField] private Button[] buttons = new Button[3];
     [SerializeField] private TMP_Text[] buttonTexts = new TMP_Text[3];
 
     private new Camera camera;
 
-    [SerializeField] private int currentAmountOfTurns;
+    private bool inMenu = false;
+
     private int maxAmountOfTurns;
 
-    public override void ChangeTurnAction()
+    public void MainMenu()
     {
+        EventManager.InvokeEvent(EventType.Restart);
+    }
+
+    public void Resume()
+    {
+        inMenu = false;
+        menuObject.SetActive(false);
+        EventManager.InvokeEvent(EventType.Resume);
+    }
+
+    public override void ChangeTurnAction(bool value)
+    {
+        if (this == null) { return; }
         currentTurnText.text = "Current Turn : " + CurrentTurn;
+        if (inCombat)
+        {
+            buttonHolder.SetActive(value);
+        }
+    }
+
+    public override void HealthDepletedAction()
+    {
+        base.HealthDepletedAction();
+        EventManager.InvokeEvent(EventType.GameOver);
+        GameManager.Instance.Entities.Remove(this);
+    }
+
+    private void GoToMainMenu()
+    {
+        SceneManager.LoadScene(mainMenuSceneIndex);
+    }
+
+    private void GameOver()
+    {
+        if (this == null) { return; }
+        inCombat = false;
+        playerMesh.gameObject.SetActive(false);
+        dungeonUI.SetActive(false);
+        combatUI.SetActive(false);
+        buttonHolder.SetActive(false);
+        SceneManager.LoadScene(mainMenuSceneIndex);
+        Destroy(playerHolder);
     }
 
     private void Start()
     {
+        audioSource = GetComponent<AudioSource>();
+        maxHealth = Health;
+        healthSlider.value = healthSlider.maxValue;
         skillsScriptableObject.Items.Clear();
         playerMesh.gameObject.SetActive(true);
         dungeonUI.SetActive(true);
         combatUI.SetActive(false);
         camera = Camera.main;
         maxAmountOfTurns = currentAmountOfTurns;
+
+        GameManager.Instance.SetPlayer(this);
     }
+
 
     private void StartCombat()
     {
-        currentTurnText.gameObject.SetActive(false);
+        if (this == null) { return; }
+        if (currentTurnText != null)
+        {
+            currentTurnText.gameObject.SetActive(false);
+        }
         dungeonUI.SetActive(false);
         combatUI.SetActive(true);
         playerMesh.gameObject.SetActive(false);
 
-        foreach (InventorySlot inventorySlot in inventorySlots)
+        for (int i = 0; i < inventorySlots.Count; i++)
         {
-            if (inventorySlot.transform.childCount != 0)
+            if (inventorySlots[i].transform.childCount != 0)
             {
-                Item currentItem = inventorySlot.GetComponentInChildren<Item>();
-                if (skillsScriptableObject.Items.Contains(currentItem)) { continue; }
-                skillsScriptableObject.Items.Add(currentItem);
-                Debug.Log(currentItem);
+                Item currentItem = inventorySlots[i].GetComponentInChildren<Item>();
+                if (skills.Contains(currentItem)) { continue; }
+                skills.Add(currentItem);
             }
         }
 
-        skills.Clear();
-        skills.AddRange(skillsScriptableObject.Items);
-
-        foreach (Button button in buttons)
+        for (int i = 0; i < skills.Count; i++)
         {
-            button.gameObject.SetActive(false);
+            skills[i].Skill.Initialize(this);
         }
+
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            buttons[i].gameObject.SetActive(false);
+        }
+
+        buttonHolder.SetActive(CurrentTurn);
 
         for (int i = 0; i < skills.Count; i++)
         {
@@ -78,21 +140,42 @@ public class PlayerControlls : Character
             buttonTexts[i].text = skills[i].GetSkillName();
         }
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(combatSceneIndex);
+        SceneManager.LoadScene(combatSceneIndex);
     }
 
     private void ExitCombat()
     {
-        currentTurnText.gameObject.SetActive(true);
+        if (this == null) { return; }
+        currentAmountOfTurns = maxAmountOfTurns;
+        entityPosition = Vector2Int.zero;
+        inCombat = false;
+        if (currentTurnText != null)
+        {
+            currentTurnText.gameObject.SetActive(true);
+        }
         combatUI.SetActive(false);
         playerMesh.gameObject.SetActive(true);
         dungeonUI.SetActive(true);
-        UnityEngine.SceneManagement.SceneManager.LoadScene(dungeonSceneIndex);
+        buttonHolder.SetActive(false);
+        SceneManager.LoadScene(dungeonSceneIndex);
     }
 
     private void PlayerInput()
     {
-        if (!CurrentTurn) { return; }
+        if (Input.GetKeyDown(KeyCode.Escape) && !inMenu)
+        {
+            inMenu = true;
+            EventManager.InvokeEvent(EventType.Pauze);
+            menuObject.SetActive(inMenu);
+        }
+        else if (Input.GetKeyDown(KeyCode.Escape) && inMenu)
+        {
+            inMenu = false;
+            EventManager.InvokeEvent(EventType.Resume);
+            menuObject.SetActive(inMenu);
+        }
+
+        if (!CurrentTurn || inMenu) { return; }
 
         var ray = camera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit))
@@ -104,17 +187,17 @@ public class PlayerControlls : Character
             target.HighLight();
             if (Input.GetMouseButtonDown(0))
             {
+                currentAmountOfTurns--;
+                playerMesh.position = DungeonGenerator.Instance.MoveEntity(target, playerMesh.position, entityPosition, this, true);
+                playerMesh.position = DungeonGenerator.Instance.MoveEntity(target, playerMesh.position, entityPosition, this, true);
+                EventManager.InvokeEvent(EventType.ShakeCamera);
+                audioSource.Play();
+
                 if (currentAmountOfTurns <= 0)
                 {
-                    TurnManager.Instance.ChangeTurn();
+                    GameManager.Instance.ChangeTurn();
                     currentAmountOfTurns = maxAmountOfTurns;
-                }
-                else
-                {
-                    currentAmountOfTurns--;
-                    playerMesh.position = DungeonGenerator.Instance.MoveEntity(target, playerMesh.position, entityPosition, this, true);
-                    playerMesh.position = DungeonGenerator.Instance.MoveEntity(target, playerMesh.position, entityPosition, this, true);
-                    EventManager.InvokeEvent(EventType.ShakeCamera);
+
                 }
             }
         }
@@ -122,23 +205,13 @@ public class PlayerControlls : Character
 
     private void OnEnable()
     {
+        EventManager.AddListener(EventType.Restart, GoToMainMenu);
         EventManager.AddListener(EventType.StartCombat, StartCombat);
         EventManager.AddListener(EventType.ExitCombat, ExitCombat);
+        EventManager.AddListener(EventType.GameOver, GameOver);
     }
 
-    private void OnDisable()
-    {
-        EventManager.RemoveListener(EventType.ExitCombat, ExitCombat);
-        EventManager.RemoveListener(EventType.StartCombat, StartCombat);
-    }
-
-    public void ChangeAmountOfTurns(int amount)
-    {
-        maxAmountOfTurns += amount;
-        currentAmountOfTurns += amount;
-    }
-
-    void Update()
+    private void Update()
     {
         PlayerInput();
     }
