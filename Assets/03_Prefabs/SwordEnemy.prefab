@@ -145,7 +145,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   WhichType: 0
   SkillName: Sword
-  damage: 10
+  damage: 20
 --- !u!82 &333316031894175361
 AudioSource:
   m_ObjectHideFlags: 0
@@ -242,6 +242,43 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &1044610475892727743
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1888124441021437122}
+  m_Layer: 0
+  m_Name: EntityMeshHolder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1888124441021437122
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1044610475892727743}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1599226649483400477}
+  m_Father: {fileID: 404610224827839216}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 1150, y: 409}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1132938703182228331
 GameObject:
   m_ObjectHideFlags: 0
@@ -465,6 +502,9 @@ MonoBehaviour:
   healthSlider: {fileID: 61285130320468749}
   health: 100
   currentAmountOfTurns: 3
+  shakeAmplitude: 0.5
+  shakeDuration: 0.5
+  canShakePlayer: 0
   currentTurn: 0
   enemyMesh: {fileID: 854825093585760323}
   enemyCombatObject: {fileID: 9156429321447697508}
@@ -597,7 +637,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1599226649483400477}
+  - {fileID: 1888124441021437122}
   m_Father: {fileID: 5127465539633290189}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1128,18 +1168,18 @@ RectTransform:
   m_GameObject: {fileID: 9156429321447697508}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.9545, y: 1.9545, z: 1.9545}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5306875425878546433}
   - {fileID: 2836032134158350348}
   - {fileID: 99005711735937502}
-  m_Father: {fileID: 404610224827839216}
+  m_Father: {fileID: 1888124441021437122}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1173, y: 367}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &853748589379971679

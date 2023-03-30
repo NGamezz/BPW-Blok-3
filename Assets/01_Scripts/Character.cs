@@ -56,10 +56,29 @@ public class Character : MonoBehaviour
 
     [SerializeField] protected int currentAmountOfTurns;
 
+    [SerializeField] protected float shakeAmplitude = 4;
+
+    [SerializeField] protected float shakeDuration = 1.5f;
+
+    [SerializeField] protected bool canShakePlayer;
+
     [SerializeField] private bool currentTurn;
+
+    protected Vector3 initialLocalPosition = Vector3.zero;
+
+    protected float shakeTimer;
 
     protected float maxHealth;
 
+    public void ShakePlayer()
+    {
+        canShakePlayer = true;
+        shakeTimer = shakeDuration;
+    }
+
+    public virtual void ShakeCharacter()
+    {
+    }
 
     public void Heal(float amount)
     {

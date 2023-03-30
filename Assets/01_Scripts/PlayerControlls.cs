@@ -15,6 +15,7 @@ public class PlayerControlls : Character
 
     [SerializeField] private GameObject playerHolder;
     [SerializeField] private GameObject menuObject;
+    [SerializeField] private GameObject combatPlayerMesh;
 
     [SerializeField] private TMP_Text currentTurnText;
 
@@ -81,6 +82,21 @@ public class PlayerControlls : Character
         combatUI.SetActive(false);
         buttonHolder.SetActive(false);
         Destroy(playerHolder);
+    }
+
+    public override void ShakeCharacter()
+    {
+        if (shakeTimer > 0)
+        {
+            combatPlayerMesh.transform.localPosition = initialLocalPosition + Random.insideUnitSphere * shakeAmplitude;
+            shakeTimer -= Time.deltaTime;
+        }
+        else
+        {
+            canShakePlayer = false;
+            shakeTimer = 0;
+            combatPlayerMesh.transform.localPosition = initialLocalPosition;
+        }
     }
 
     private void Start()
@@ -211,6 +227,10 @@ public class PlayerControlls : Character
 
     private void Update()
     {
+        if (canShakePlayer)
+        {
+            ShakeCharacter();
+        }
         PlayerInput();
     }
 }

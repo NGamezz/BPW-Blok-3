@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private List<Character> entities = new();
 
+    [SerializeField] private AudioSource victorySound;
+
     [SerializeField] private List<Character> entitiesInCombat = new();
 
     [SerializeField] private GameObject gameOverScreen;
@@ -51,6 +53,7 @@ public class GameManager : MonoBehaviour
         if (entities.Count == 1 && entities[0] == player)
         {
             victoryScreen.SetActive(true);
+            victorySound.Play();
             Invoke(nameof(Victory), 2f);
         }
         if (inCombat)
