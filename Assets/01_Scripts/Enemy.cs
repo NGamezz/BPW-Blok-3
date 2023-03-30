@@ -7,10 +7,10 @@ public class Enemy : Character
     [SerializeField] private GameObject enemyMesh;
     [SerializeField] private GameObject enemyCombatObject;
     [SerializeField] private float delay;
-    private int maxAmountOfTurns;
     [SerializeField] private bool allowTurn = true;
-    private bool canAttack = true;
     private AudioSource audioSource;
+    private int maxAmountOfTurns;
+    private bool canAttack = true;
     private bool pauze = false;
 
     public override void HealthDepletedAction()
@@ -20,10 +20,26 @@ public class Enemy : Character
         Destroy(gameObject);
     }
 
+    public override void ShakeCharacter()
+    {
+        if (shakeTimer > 0)
+        {
+            enemyCombatObject.transform.localPosition = initialLocalPosition + Random.insideUnitSphere * shakeAmplitude;
+            shakeTimer -= Time.deltaTime;
+        }
+        else
+        {
+            canShakePlayer = false;
+            shakeTimer = 0;
+            enemyCombatObject.transform.localPosition = initialLocalPosition;
+        }
+    }
+
     private void Start()
     {
         GameManager.Instance.SetEnemies(this);
 
+        initialLocalPosition = Vector3.zero;
         audioSource = GetComponent<AudioSource>();
         Invoke(nameof(OnStart), 2f);
 
@@ -94,6 +110,10 @@ public class Enemy : Character
 
     private void Update()
     {
+        if (canShakePlayer)
+        {
+            ShakeCharacter();
+        }
         if (pauze) { return; }
         if (CurrentTurn && !inCombat)
         {

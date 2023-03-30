@@ -54,6 +54,7 @@ public class Skill : MonoBehaviour
             if (GameManager.Instance == null || this == null || owner == null) { return; }
             if (GameManager.Instance.EntitiesInCombat[i] != owner)
             {
+                GameManager.Instance.EntitiesInCombat[i].ShakePlayer();
                 GameManager.Instance.EntitiesInCombat[i].TakeDamage(damage * damageMultiplier);
             }
         }

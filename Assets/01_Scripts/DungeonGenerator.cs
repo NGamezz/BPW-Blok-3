@@ -61,6 +61,8 @@ public class DungeonGenerator : MonoBehaviour
     [SerializeField] private Room[] rooms;
     [SerializeField] private Room startRoom;
 
+    [SerializeField] private ParticleSystem dustCloud;
+
     private List<Character> entities = new();
 
     private readonly List<Vector2Int> existingTiles = new();
@@ -118,9 +120,17 @@ public class DungeonGenerator : MonoBehaviour
             }
         }
 
+
         if (hitTile == null)
         {
+            dustCloud.transform.position = currentPosition;
+            dustCloud.Play();
             return currentPosition;
+        }
+        else
+        {
+            dustCloud.transform.position = hitTile.transform.position;
+            dustCloud.Play();
         }
 
         if (hitTile.HasItem)
